@@ -256,7 +256,9 @@ def cli():
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu", help="device to use for PyTorch inference")
     parser.add_argument("--output_dir", "-o", type=str, default=".", help="directory to save the outputs")
     parser.add_argument("--verbose", type=str2bool, default=True, help="whether to print out the progress and debug messages")
-
+    
+    parser.add_argument("--max_line_length", type=optional_int, default=42, help="max amount of characters for a line in the subtitle files")
+    
     parser.add_argument("--task", type=str, default="transcribe", choices=["transcribe", "translate"], help="whether to perform X->X speech recognition ('transcribe') or X->English translation ('translate')")
     parser.add_argument("--language", type=str, default=None, choices=sorted(LANGUAGES.keys()) + sorted([k.title() for k in TO_LANGUAGE_CODE.keys()]), help="language spoken in the audio, specify None to perform language detection")
 
@@ -299,7 +301,9 @@ def cli():
     threads = args.pop("threads")
     if threads > 0:
         torch.set_num_threads(threads)
-
+    
+    output_max_line_length = args.pop("max_line_length")
+    
     from . import load_model
     model = load_model(model_name, device=device, download_root=model_dir)
 
@@ -318,7 +322,7 @@ def cli():
 
         # save SRT
         with open(os.path.join(output_dir, audio_basename + ".srt"), "w", encoding="utf-8") as srt:
-            write_srt(result["segments"], file=srt)
+            write_srt(result["segments"], file=srt, max_line_length=output_max_line_length)
 
 
 if __name__ == '__main__':

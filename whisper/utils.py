@@ -61,7 +61,7 @@ def write_vtt(transcript: Iterator[dict], file: TextIO):
         )
 
 
-def write_srt(transcript: Iterator[dict], file: TextIO):
+def write_srt(transcript: Iterator[dict], file: TextIO, max_line_length: int = 42):
     """
     Write a transcript to a file in SRT format.
 
@@ -76,13 +76,52 @@ def write_srt(transcript: Iterator[dict], file: TextIO):
         with open(Path(output_dir) / (audio_basename + ".srt"), "w", encoding="utf-8") as srt:
             write_srt(result["segments"], file=srt)
     """
+    
+    comma_split_threshold = int(float(max_line_length) * 0.75)
+    
     for i, segment in enumerate(transcript, start=1):
+        
+        # left the .replace() here to not change unnecessarily
+        # but I don't think it's needed?
+        segment_text = segment['text'].strip().replace('-->', '->')
+        
+        if len(segment_text) > max_line_length:
+            segment_text = split_text_into_multiline(segment_text, max_line_length, comma_split_threshold)
+        
         # write srt lines
         print(
             f"{i}\n"
             f"{format_timestamp(segment['start'], always_include_hours=True, decimal_marker=',')} --> "
             f"{format_timestamp(segment['end'], always_include_hours=True, decimal_marker=',')}\n"
-            f"{segment['text'].strip().replace('-->', '->')}\n",
+            f"{segment_text}\n",
             file=file,
             flush=True,
         )
+
+
+def split_text_into_multiline(segment_text: str, max_line_length: int, comma_split_threshold: int):
+    
+    words = segment_text.split(' ')
+    
+    lines = [
+        words[0]
+    ]
+    
+    for word in words[1:]:
+        current_line = lines[-1]
+        
+        # start a new line if the last word ended with a comma,
+        # and we're mostly through this line
+        if current_line.endswith(',') and len(current_line) > comma_split_threshold:
+            lines.append(word)
+            continue
+        
+        line_with_word = f'{current_line} {word}'
+        
+        if len(line_with_word) > max_line_length:
+            lines.append(word)
+        else:
+            lines[-1] = line_with_word
+    
+    return '\n'.join(lines)
+
