@@ -257,7 +257,7 @@ def cli():
     parser.add_argument("--output_dir", "-o", type=str, default=".", help="directory to save the outputs")
     parser.add_argument("--verbose", type=str2bool, default=True, help="whether to print out the progress and debug messages")
     
-    parser.add_argument("--max_line_length", type=optional_int, default=42, help="max amount of characters for a line in the subtitle files")
+    parser.add_argument("--max_line_length", type=optional_int, default=15, help="max amount of characters for a line in the subtitle files")
     
     parser.add_argument("--task", type=str, default="transcribe", choices=["transcribe", "translate"], help="whether to perform X->X speech recognition ('transcribe') or X->English translation ('translate')")
     parser.add_argument("--language", type=str, default=None, choices=sorted(LANGUAGES.keys()) + sorted([k.title() for k in TO_LANGUAGE_CODE.keys()]), help="language spoken in the audio, specify None to perform language detection")
