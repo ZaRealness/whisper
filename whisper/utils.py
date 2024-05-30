@@ -61,7 +61,7 @@ def write_vtt(transcript: Iterator[dict], file: TextIO):
         )
 
 
-def write_srt(transcript: Iterator[dict], file: TextIO, max_line_length: int = 42):
+def write_srt(transcript: Iterator[dict], file: TextIO, max_line_length: int = 15):
     """
     Write a transcript to a file in SRT format.
 
